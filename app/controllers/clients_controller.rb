@@ -103,7 +103,14 @@ class ClientsController < ApplicationController
               total_current_charges.push(0)
             else
               total_current_charges.push(content.slice(/Total Current Charges\W+\d+.\d+/).slice(/\d+.\d+/).to_i)
-            end       
+            end 
+
+            # Total
+            total.push(content.scan(/Total\W+\$ \d+.\d+/))
+            total[j-1].map! do |k|
+              k.slice(/\d+.\d+/)
+            end    
+                  
             # service_plan_name, additional_local_airtime, long_distance_charges, data_and_other_services, value_addded_services
             parse.each_key do |key|
               if content.slice(parse[key][0]).nil?
@@ -112,11 +119,7 @@ class ClientsController < ApplicationController
                 parse[key].push(true)
               end
             end           
-            # Total
-            total.push(content.scan(/Total\W+\$ \d+.\d+/))
-            total[j-1].map! do |k|
-              k.slice(/\d+.\d+/)
-            end     
+             
           end
         else j >= 5       
           break       
