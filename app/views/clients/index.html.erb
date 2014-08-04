@@ -1,0 +1,25 @@
+<div class="hero-unit">
+<h2 class="alert alert-info center"> All Clients</h2>
+<table class="table  table-bordered table-condensed">
+  <tr>
+  <th>ID</th>
+    <th>Client number</th>
+    <th>Bill number</th>
+    <th>Cellular numbers</th>
+    <th>Individual details</th>
+  </tr>
+ 
+<% @clients.each do |client| %>
+  <tr>
+    <td><%= client.id %></td>
+    <td><%= client.client_number %></td>
+    <td><%= client.bill_number %></td>
+    <td><%= link_to 'Cellular number', cellular_number_client_path(client), class: "btn btn-sm btn-info" %></td>
+    <td><%= link_to 'Individual detail', individual_detail_client_path(client) , class: "btn btn-sm btn-success" %></td>
+    <td><%= link_to 'Destroy', client_path(client), class: "btn btn-sm btn-danger",
+                    method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+<%= link_to 'New', new_client_path, class: "btn btn-large btn-primary " %>
+</div>
