@@ -1,7 +1,7 @@
 <div class="hero-unit">
 <h2 class="alert alert-info center"> New pdf file</h2>
 <% flash.each do |key, value| %>
-        <div class="alert alert-<%= key %>"><%= value %></div>
+        <div class="alert alert-danger"><%= value %></div>
 <% end %>
 <%= form_for :client, url: clients_path do |f| %>
   <div class="form-group ">

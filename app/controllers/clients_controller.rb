@@ -77,13 +77,11 @@ class ClientsController < ApplicationController
       client = contents[0].slice(/CLIENT\W+N\W+\w+/).slice(/\d+/).to_i
       bill = contents[0].slice(/BILL\WN\W+\w+/).slice(/\d+/).to_i
       j = 0
-      data = [] 
-      saving = []
-      total_current_charges = []      
-      total = []
+      data = []      
       parse = {service_plan_name: [/Service Plan Name/], additional_local_airtime:  [/Additional Local Airtime/],
-      long_distance_charges: [/Long Distance Charges/], data_and_other_services: [/Data and Other Services/],
-      value_addded_services: [/Value Added Services/]}
+        long_distance_charges: [/Long Distance Charges/], data_and_other_services: [/Data and Other Services/],
+        value_addded_services: [/Value Added Services/],saving: [/Total\W+Month's\W+Savings\W+\d+.\d+/],
+        total_current_charges: [/Total Current Charges\W+\d+.\d+/]}
       contents.each do |content|
         exit = content.scan(/I\WN\WD\WI\WV\WI\WD\WU\WA\WL\WD\WE\WT\WA\WI\WL/)
         if exit.empty?        
@@ -92,34 +90,22 @@ class ClientsController < ApplicationController
           if content.slice(/C u r r e n t C h a r g e s - D e t a i l/).nil? == false 
             j += 1      
             page = content.slice(/\d+\W+of\W+\d+/).slice(/\d+/).to_i
-            # Total Month's Savings
-            if content.slice(/Total\W+Month's\W+Savings\W+\d+.\d+/).nil?
-              saving.push(0)
-            else
-              saving.push(content.slice(/Total\W+Month's\W+Savings\W+\d+.\d+/).slice(/\d+.\d+/).to_i)
-            end
-            # Total Current Charges
-            if content.slice(/Total Current Charges\W+\d+.\d+/).nil?
-              total_current_charges.push(0)
-            else
-              total_current_charges.push(content.slice(/Total Current Charges\W+\d+.\d+/).slice(/\d+.\d+/).to_i)
-            end 
-
-            # Total
+            total = []
             total.push(content.scan(/Total\W+\$ \d+.\d+/))
-            total[j-1].map! do |k|
+            total[0].map! do |k|
               k.slice(/\d+.\d+/)
-            end    
-                  
-            # service_plan_name, additional_local_airtime, long_distance_charges, data_and_other_services, value_addded_services
+            end   
+            m = 0
             parse.each_key do |key|
               if content.slice(parse[key][0]).nil?
                 parse[key].push(0)
+              elsif key == :saving || key == :total_current_charges
+                parse[key].push(content.slice(parse[key][0]).slice(/\d+.\d+/).to_i)
               else
-                parse[key].push(true)
+                parse[key].push(total[0][m])
+                m += 1
               end
-            end           
-             
+            end              
           end
         else j >= 5       
           break       
@@ -134,10 +120,7 @@ class ClientsController < ApplicationController
       parse[:client] = client
       parse[:bill] =  bill
       parse[:data] = data
-      parse[:saving] =  saving
-      parse[:total_current_charges] =  total_current_charges
-      parse[:total] =  total  
-      return parse
+      parse
     end  
   end
 
@@ -154,46 +137,21 @@ class ClientsController < ApplicationController
       cellular_number.gst = dataa[12].to_f
       cellular_number.subtotal = dataa[11].to_f
       cellular_number.total = dataa[13].to_f   
+
       client.cellular_numbers << cellular_number  
     end  
     parse[:saving].each_index do |i|
       individual_detail = IndividualDetail.new
       individual_detail.total_onths_savings = parse[:saving][i].to_f
       individual_detail.total = parse[:total_current_charges][i].to_f
-      j = 0
-      if parse[:service_plan_name][i] == true
-        individual_detail.service_plan_name = parse[:total][i][j].to_f
-        j += 1
-      else 
-        individual_detail.service_plan_name = parse[:service_plan_name][i]
-      end
-      if parse[:additional_local_airtime][i] == true
-        individual_detail.additional_local_airtime = parse[:total][i][j].to_f
-        j += 1
-      else 
-        individual_detail.additional_local_airtime = parse[:additional_local_airtime][i]
-      end
-      if parse[:long_distance_charges][i] == true
-        individual_detail.long_distance_charges = parse[:total][i][j].to_f
-        j += 1
-      else 
-        individual_detail.long_distance_charges = parse[:long_distance_charges][i]
-      end
-      if parse[:data_and_other_services][i] == true
-        individual_detail.data_and_other_services = parse[:total][i][j].to_f
-        j += 1
-      else 
-        individual_detail.data_and_other_services = parse[:data_and_other_services][i]
-      end
-      if parse[:value_addded_services][i] == true
-        individual_detail.value_addded_services = parse[:total][i][j].to_f
-        j += 1
-      else 
-        individual_detail.value_addded_services = parse[:value_addded_services][i]
-      end
-       client.individual_details << individual_detail 
+      individual_detail.service_plan_name = parse[:service_plan_name][i]
+      individual_detail.additional_local_airtime = parse[:additional_local_airtime][i]
+      individual_detail.long_distance_charges = parse[:long_distance_charges][i]
+      individual_detail.data_and_other_services = parse[:data_and_other_services][i]
+      individual_detail.value_addded_services = parse[:value_addded_services][i]
+
+      client.individual_details << individual_detail 
     end
     client
   end
-
 end
