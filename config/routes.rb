@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   
-  resources :clients, only: [:new, :index, :destroy, :create] do
+  resources :clients, only: [:index, :destroy, :create] do
   member do
     get 'individual_detail'
     get 'cellular_number' 

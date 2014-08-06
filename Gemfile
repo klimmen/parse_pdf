@@ -41,5 +41,6 @@ gem 'bootstrap-sass'
 gem 'autoprefixer-rails'
 gem 'poppler', '~> 2.2.0'
 gem 'pdf-reader', '~> 1.3.3'
+gem 'sidekiq' # подпимает паралельно еще один сервер
 
 
