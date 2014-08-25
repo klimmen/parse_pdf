@@ -4,7 +4,7 @@ source 'https://rubygems.org'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.1.4'
 # Use sqlite3 as the database for Active Record
-gem 'sqlite3'
+gem "pg"
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 4.0.3'
 # Use Uglifier as compressor for JavaScript assets
@@ -42,5 +42,12 @@ gem 'autoprefixer-rails'
 gem 'poppler', '~> 2.2.0'
 gem 'pdf-reader', '~> 1.3.3'
 gem 'sidekiq' # подпимает паралельно еще один сервер
-
+gem 'sidekiq_status'
+gem 'spinjs-rails'
+gem 'remotipart', '~> 1.2' # для :remote => true в аform_for (паредача js file_field)
+gem 'gon' #для передачи переменных на js
+gem 'rabl-rails'
+gem 'will_paginate'
+gem 'bootstrap-will_paginate'
+gem 'devise', '3.2.2'
 

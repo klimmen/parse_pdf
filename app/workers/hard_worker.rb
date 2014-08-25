@@ -1,10 +1,10 @@
 class HardWorker
   include Sidekiq::Worker
+  include SidekiqStatus::Worker
   sidekiq_options retry: false
 
   def perform(name_file)
-  	contents = open_file(name_file)
-      parse = parse_file(contents)
+     parse = open_file(name_file)
       if parse != false 
         @client =  new_db_client(parse)        
         @client.save       
@@ -13,44 +13,39 @@ class HardWorker
 
   def open_file(name_file)
     all_content=[] 
-    reader = PDF::Reader.new("public/uploads/#{name_file}")       
-    reader.pages.each do |page|
-      all_content.push(page.text)
-    end
-    return all_content
-  end
-  
-  def parse_file(contents)    
-      client = contents[0].slice(/CLIENT\W+N\W+\w+/).slice(/\d+/).to_i
-      bill = contents[0].slice(/BILL\WN\W+\w+/).slice(/\d+/).to_i
-      n_pages_individual_detail = 0 # количество пропарсиный страниц individual_detail (в заданини первые 5)
-      data_cellular_numbers = []      
-      # создаем хеш с даными для заполнения полей individual_detail, первые елементы масивов - регулярки для 
-      # поиска нужных данных 
-      parse = {service_plan_name: [/Service Plan Name/], additional_local_airtime:  [/Additional Local Airtime/],
+    client = ''
+    bill = ''
+    n_pages_individual_detail = 0
+    data_cellular_numbers = []
+    parse = {service_plan_name: [/Service Plan Name/], additional_local_airtime:  [/Additional Local Airtime/],
         long_distance_charges: [/Long Distance Charges/], data_and_other_services: [/Data and Other Services/],
         value_addded_services: [/Value Added Services/],saving: [/Total\W+Month's\W+Savings\W+\d+.\d+/],
         total_current_charges: [/Total Current Charges\W+\d+.\d+/]}
-      contents.each do |content| # парсинг по страницам
-        # exit_cellular_numbers - переход с поиска данных с таблицы cellular_number на таблицу individual_detail
-        exit_cellular_numbers = content.scan(/I\WN\WD\WI\WV\WI\WD\WU\WA\WL\WD\WE\WT\WA\WI\WL/) 
+    reader = PDF::Reader.new("public/uploads/#{name_file}")       
+    reader.pages.each do |content|
+      if client.blank?
+        client = content.text.slice(/CLIENT\W+N\W+\w+/).slice(/\d+/).to_i
+        bill = content.text.slice(/BILL\WN\W+\w+/).slice(/\d+/).to_i
+      else
+             # exit_cellular_numbers - переход с поиска данных с таблицы cellular_number на таблицу individual_detail
+        exit_cellular_numbers = content.text.scan(/I\WN\WD\WI\WV\WI\WD\WU\WA\WL\WD\WE\WT\WA\WI\WL/) 
         if exit_cellular_numbers.empty?
           # вытягиваем все данные для таблицы cellular_number      
-          data_cellular_numbers += content.scan(/\w+\W+\d+\-\d+\-\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+/)
+          data_cellular_numbers += content.text.scan(/\w+\W+\d+\-\d+\-\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+\W+\d+\.\d+/)
         elsif !exit_cellular_numbers.empty? && n_pages_individual_detail < 5       
-          if !content.slice(/C u r r e n t C h a r g e s - D e t a i l/).nil? # есть ли данные на странице для individual_detail
+          if !content.text.slice(/C u r r e n t C h a r g e s - D e t a i l/).nil? # есть ли данные на странице для individual_detail
             n_pages_individual_detail += 1
             totals_individual_detail = [] # для вытягивание тоталов на странице
-            totals_individual_detail = content.scan(/Total\W+\$ \d+.\d+/)
+            totals_individual_detail = content.text.scan(/Total\W+\$ \d+.\d+/)
             totals_individual_detail.map! do |k| # вытягиваем или тоталов только числовое значение
               k.slice(/\d+.\d+/)
             end   
             n_totals_individual_detail = 0 # нужна для присваивания нужного значения нужному столбцу таблицы individual_detail
             parse.each_key do |key|
-              if content.slice(parse[key][0]).nil? # если даных для столбца на странице нет то присв. - 0
+              if content.text.slice(parse[key][0]).nil? # если даных для столбца на странице нет то присв. - 0
                 parse[key].push(0)
               elsif key == :saving || key == :total_current_charges  
-                parse[key].push(content.slice(parse[key][0]).slice(/\d+.\d+/))
+                parse[key].push(content.text.slice(parse[key][0]).slice(/\d+.\d+/))
               else
                 parse[key].push(totals_individual_detail[n_totals_individual_detail])
                 n_totals_individual_detail += 1
@@ -60,19 +55,23 @@ class HardWorker
         else n_pages_individual_detail >= 5       
           break       
         end
-      end  
+      end
+    end  
       data_cellular_numbers.map! do |i| # данные для таблицы cellular_number заганяем в масив
         i.split
       end
+
       parse.each_key do |key|  # удаляем регулярки, за ненадобностью
         parse[key].delete_at(0)
-      end   
+      end 
       # загоняем все нужные переменные в хеш для ретурна
       parse[:client] = client
       parse[:bill] =  bill
       parse[:data_cellular_numbers] = data_cellular_numbers
-      return parse 
+      return parse
   end
+  
+  
 
   def new_db_client(parse)
     client = Client.new(client_number:parse[:client], bill_number:parse[:bill] )

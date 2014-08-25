@@ -1,5 +1,8 @@
+
 <div class="hero-unit">
 <h2 class="alert alert-success center"> Individual details </h2>
+  <div id="spinnerContainer">
+</div>
 <table class="table  table-bordered table-condensed">
     <tr>
     <th>ID</th>
@@ -26,8 +29,7 @@
     <% end %>
 
 </table>
-
-
-
-<%= link_to 'Back', clients_path, class: "btn btn-success" %>
+<br>
+<%= link_to 'Back', clients_path,id: 'location_reload', class: "btn btn-success gon_watch_stop" %>
 </div>
+

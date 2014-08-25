@@ -5,13 +5,12 @@
 #logo {
   float: left;
   margin-right: 10px;
-  font-size: 2em;
-  
+  font-size: 2em;  
   text-transform: uppercase;
   letter-spacing: -1px;
-  padding-top: 19px;
+  padding-top: 13px;
   padding-left: 19px;
-  padding-bottom: 19px;
+  padding-bottom: 9px;
   font-weight: bold;
   line-height: 1;
 }
@@ -30,3 +29,28 @@
 body {
   padding-top: 80px;
 }
+
+#spinnerContainer{
+background-color: #dff0d8;
+color: #468847;
+border-color: #d6e9c6;
+margin-bottom: 18px;
+text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+-webkit-border-radius: 4px;
+-moz-border-radius: 4px;
+border-radius: 4px;
+}
+
+.table {
+margin-bottom: 0px;
+}
+
+.alert {
+margin-bottom: 0px;
+}
+
+
+.pagination {
+margin-bottom: 0px;
+}
+

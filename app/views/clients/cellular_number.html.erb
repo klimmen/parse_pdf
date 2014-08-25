@@ -1,6 +1,9 @@
+
 <div class="hero-unit">
 <h2 class="alert alert-info center"> Cellular Numbers </h2>
-
+<%= will_paginate @cellular_numbers, class: "gon_watch_stop"%>
+  <div id="spinnerContainer" >
+</div>
 <table class="table  table-bordered ">
     <tr>
       <th >ID</th>
@@ -30,7 +33,9 @@
     <% end %>
 
 </table>
-<%= link_to 'Back', clients_path, class: "btn btn-info " %>
+<%= will_paginate @cellular_numbers, class: "gon_watch_stop"%>
+<br>
+<%= link_to 'Back', clients_path,id: 'location_reload', class: "btn btn-info gon_watch_stop" %>
 <br>
 <br>
 </div>

@@ -1,11 +1,15 @@
 Rails.application.routes.draw do
   
+  devise_for :users
   resources :clients, only: [:index, :destroy, :create] do
-  member do
-    get 'individual_detail'
-    get 'cellular_number' 
+    member do
+      get 'individual_detail'
+      get 'cellular_number' 
+    end
   end
-end
+  
+  #post "clients/qwerty"
+  match '/qwerty',    to: 'clients#qwerty',    via: 'post'
   
   #match 'clients/:id/individual_detail',    to: 'clients#individual_detail',    via: 'get'
   #match 'clients/:id/cellular_number',    to: 'clients#cellular_number',    via: 'get'
@@ -14,7 +18,7 @@ end
   # See how all your routes lay out with "rake routes".
 
   # You can have the root of your site routed with "root"
-  # root 'welcome#index'
+  root 'home#index'
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
