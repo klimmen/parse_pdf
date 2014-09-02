@@ -29,7 +29,7 @@ try {
   //  console.log(token)
     if (gon.global.user[key] == token)
     {
-      document.getElementById('spinnerContainer').innerHTML += 'Parse launch file: '+gon.global.name_pdf_file[key]+ ' <br>';
+      document.getElementById('spinnerContainer').innerHTML += 'Parsing file: '+gon.global.name_pdf_file[key]+ ' <br>';
     }
   }
   document.getElementById("spinnerContainer").style.padding="15px 35px 15px 14px";
