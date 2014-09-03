@@ -1,15 +1,10 @@
-
-
 var spinner
 var target
 var status_container
 var token
-
 var n
 $(function() {
     token = $('meta[name="csrf-token"]').attr('content');
- // alert(token)
-
 });
 $(document).on("page:change",function(){ 
 if (window.location.pathname.match(/clients/) == 'clients')
@@ -17,16 +12,9 @@ if (window.location.pathname.match(/clients/) == 'clients')
 try {
   n = gon.global.jid.length
 } catch(e) {
-
 }
-
-
-
  if (n > 1 && gon.global.user[n-1] == token) {
-  //console.log("+")
   for (var key = 1; key < n; key++) {
-  //  console.log(gon.global.user)
-  //  console.log(token)
     if (gon.global.user[key] == token)
     {
       document.getElementById('spinnerContainer').innerHTML += 'Parsing file: '+gon.global.name_pdf_file[key]+ ' <br>';
@@ -35,7 +23,6 @@ try {
   document.getElementById("spinnerContainer").style.padding="15px 35px 15px 14px";
   document.getElementById("spinnerContainer").style.marginTop="20px";
   displayDate();
-//  console.log("displayDate")
   SetDelay ();
   $(function () {
     $('.gon_watch_stop').click(function (event) {
@@ -65,23 +52,18 @@ function displayDate(){
   };
   target = document.getElementById('spinnerContainer');
   spinner = new Spinner(opts).spin(target);    
-}
-  
+} 
 function SetDelay () {
   delayTime = setTimeout ("Counter ()",3000);
 }
 function Counter () {
   for (var key = n-1; key > 0; key--) {
- //   console.log('gon.global.jid.length = '+n)
- //   console.log(gon.global.jid)
- //   console.log(key)
     $.ajax({
       url: "/qwerty",
       type: "POST",
       data: {key: key},
       success: function(data){
         status_container = data.status_sidekiq  
-  //      console.log("jid = "+gon.global.jid[data.keyy]+ ", key = "+ data.keyy+", status = "+status_container)}, 
         }               
     });
     if (status_container == 'complete') {
@@ -99,13 +81,11 @@ function Counter () {
       document.getElementById('spinnerContainer').innerHTML = '' ;
       document.getElementById("spinnerContainer").style.padding="0px 0px 0px 0px"; 
       document.getElementById("spinnerContainer").style.marginTop="0px";     
-      //alert('File is succesfully loaded');
       window.location.reload();
       clearTimeout (delayTime);
     }
   }
   SetDelay ();
-
 }
 
 
